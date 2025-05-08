@@ -59,8 +59,8 @@ events:
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "C:/Users/mytho/Programming/C/CRUX/.CRUX/build/build_release/CMakeFiles/CMakeScratch/TryCompile-37y8q6"
-      binary: "C:/Users/mytho/Programming/C/CRUX/.CRUX/build/build_release/CMakeFiles/CMakeScratch/TryCompile-37y8q6"
+      source: "C:/Users/mytho/Programming/C/CRUX/.CRUX/build/build_release/CMakeFiles/CMakeScratch/TryCompile-q8evli"
+      binary: "C:/Users/mytho/Programming/C/CRUX/.CRUX/build/build_release/CMakeFiles/CMakeScratch/TryCompile-q8evli"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-O0 -g -Xclang -gcodeview"
@@ -73,16 +73,16 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/mytho/Programming/C/CRUX/.CRUX/build/build_release/CMakeFiles/CMakeScratch/TryCompile-37y8q6'
+        Change Dir: 'C:/Users/mytho/Programming/C/CRUX/.CRUX/build/build_release/CMakeFiles/CMakeScratch/TryCompile-q8evli'
         
-        Run Build Command(s): C:/ProgramData/chocolatey/bin/ninja.exe -v cmTC_aab02
-        [1/2] C:\\PROGRA~1\\LLVM\\bin\\clang.exe   -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -MD -MT CMakeFiles/cmTC_aab02.dir/CMakeCCompilerABI.c.obj -MF CMakeFiles\\cmTC_aab02.dir\\CMakeCCompilerABI.c.obj.d -o CMakeFiles/cmTC_aab02.dir/CMakeCCompilerABI.c.obj -c "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeCCompilerABI.c"
-        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\PROGRA~1\\LLVM\\bin\\clang.exe -nostartfiles -nostdlib -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -v  -Xlinker /subsystem:console  -fuse-ld=lld-link CMakeFiles/cmTC_aab02.dir/CMakeCCompilerABI.c.obj -o cmTC_aab02.exe -Xlinker /MANIFEST:EMBED -Xlinker /implib:cmTC_aab02.lib -Xlinker /pdb:cmTC_aab02.pdb -Xlinker /version:0.0     && cd ."
+        Run Build Command(s): C:/ProgramData/chocolatey/bin/ninja.exe -v cmTC_a7f7a
+        [1/2] C:\\PROGRA~1\\LLVM\\bin\\clang.exe   -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -MD -MT CMakeFiles/cmTC_a7f7a.dir/CMakeCCompilerABI.c.obj -MF CMakeFiles\\cmTC_a7f7a.dir\\CMakeCCompilerABI.c.obj.d -o CMakeFiles/cmTC_a7f7a.dir/CMakeCCompilerABI.c.obj -c "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeCCompilerABI.c"
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\PROGRA~1\\LLVM\\bin\\clang.exe -nostartfiles -nostdlib -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -v  -Xlinker /subsystem:console  -fuse-ld=lld-link CMakeFiles/cmTC_a7f7a.dir/CMakeCCompilerABI.c.obj -o cmTC_a7f7a.exe -Xlinker /MANIFEST:EMBED -Xlinker /implib:cmTC_a7f7a.lib -Xlinker /pdb:cmTC_a7f7a.pdb -Xlinker /version:0.0     && cd ."
         clang version 19.1.4
         Target: x86_64-pc-windows-msvc
         Thread model: posix
         InstalledDir: C:\\Program Files\\LLVM\\bin
-         "C:\\\\Program Files\\\\LLVM\\\\bin\\\\lld-link" -out:cmTC_aab02.exe "-libpath:C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Tools\\\\MSVC\\\\14.42.34433\\\\lib\\\\x64" "-libpath:C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Tools\\\\MSVC\\\\14.42.34433\\\\atlmfc\\\\lib\\\\x64" "-libpath:C:\\\\Program Files (x86)\\\\Windows Kits\\\\10\\\\Lib\\\\10.0.22621.0\\\\ucrt\\\\x64" "-libpath:C:\\\\Program Files (x86)\\\\Windows Kits\\\\10\\\\Lib\\\\10.0.22621.0\\\\um\\\\x64" "-libpath:C:\\\\Program Files\\\\LLVM\\\\lib\\\\clang\\\\19\\\\lib\\\\windows" -nologo -debug /subsystem:console CMakeFiles/cmTC_aab02.dir/CMakeCCompilerABI.c.obj /MANIFEST:EMBED /implib:cmTC_aab02.lib /pdb:cmTC_aab02.pdb /version:0.0\x0d
+         "C:\\\\Program Files\\\\LLVM\\\\bin\\\\lld-link" -out:cmTC_a7f7a.exe "-libpath:C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Tools\\\\MSVC\\\\14.42.34433\\\\lib\\\\x64" "-libpath:C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Tools\\\\MSVC\\\\14.42.34433\\\\atlmfc\\\\lib\\\\x64" "-libpath:C:\\\\Program Files (x86)\\\\Windows Kits\\\\10\\\\Lib\\\\10.0.22621.0\\\\ucrt\\\\x64" "-libpath:C:\\\\Program Files (x86)\\\\Windows Kits\\\\10\\\\Lib\\\\10.0.22621.0\\\\um\\\\x64" "-libpath:C:\\\\Program Files\\\\LLVM\\\\lib\\\\clang\\\\19\\\\lib\\\\windows" -nologo -debug /subsystem:console CMakeFiles/cmTC_a7f7a.dir/CMakeCCompilerABI.c.obj /MANIFEST:EMBED /implib:cmTC_a7f7a.lib /pdb:cmTC_a7f7a.pdb /version:0.0\x0d
         
       exitCode: 0
   -
@@ -135,4 +135,3 @@ events:
       Running the C compiler's linker: "C:/Program Files/LLVM/bin/lld-link" "--version"
       LLD 19.1.4
 ...
-

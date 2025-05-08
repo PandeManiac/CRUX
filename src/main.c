@@ -13,6 +13,10 @@
 #include <time.h>
 #include <math.h>
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+
 static double get_time_seconds(void)
 {
 	return (double)SDL_GetTicks64() / 1000.0;
@@ -20,35 +24,37 @@ static double get_time_seconds(void)
 
 static void simulate(pixel* read, pixel* write, uint16_t w, uint16_t h)
 {
+	// Copy pixels to the write buffer before simulation
 	for (size_t i = 0; i < w * h; ++i)
-		write[i] = read[i];
-
-	for (int y = h - 2; y >= 0; --y)
 	{
-		for (int x = 0; x < w; ++x)
+		write[i] = read[i];
+	}
+
+	for (int y = h - 2; y >= 0; --y) // Loop from bottom to top (y-axis)
+	{
+		for (int x = 0; x < w; ++x) // Loop over each pixel in the row (x-axis)
 		{
-			size_t	i	= (size_t)(y * w + x);
-			uint8_t mat = read[i].material_index;
+			size_t	i	= (size_t)(y * w + x);	  // Index for current pixel
+			uint8_t mat = read[i].material_index; // Material type at this pixel
 
 			switch (mat)
 			{
 				case MATERIAL_WATER:
 				case MATERIAL_LAVA:
 				{
-					size_t below = (size_t)((y + 1) * w + x);
+					size_t below = (size_t)((y + 1) * w + x); // Index of the cell below
 
+					// Check if the space below is air
 					if (read[below].material_index == MATERIAL_AIR)
 					{
 						write[below].material_index = mat;
 						write[i].material_index		= MATERIAL_AIR;
 					}
-
 					else if (x > 0 && read[below - 1].material_index == MATERIAL_AIR)
 					{
 						write[below - 1].material_index = mat;
 						write[i].material_index			= MATERIAL_AIR;
 					}
-
 					else if (x < w - 1 && read[below + 1].material_index == MATERIAL_AIR)
 					{
 						write[below + 1].material_index = mat;
@@ -60,17 +66,19 @@ static void simulate(pixel* read, pixel* write, uint16_t w, uint16_t h)
 
 				case MATERIAL_FIRE:
 				{
+					// Spread fire to nearby wood
 					for (int dy = -1; dy <= 1; ++dy)
 					{
 						for (int dx = -1; dx <= 1; ++dx)
 						{
 							int nx = x + dx, ny = y + dy;
-							if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-							size_t ni = (size_t)(ny * w + nx);
+							if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue; // Ensure inside bounds
+							size_t ni = (size_t)(ny * w + nx);					  // Calculate index for neighbor
 							if (read[ni].material_index == MATERIAL_WOOD) write[ni].material_index = MATERIAL_FIRE;
 						}
 					}
 
+					// Random chance to decay fire to air
 					if (rand() % 5 == 0) write[i].material_index = MATERIAL_AIR;
 					break;
 				}
@@ -88,14 +96,15 @@ static void simulate(pixel* read, pixel* write, uint16_t w, uint16_t h)
 
 static void draw_material(pixel* pixels, uint16_t sim_width, uint16_t sim_height, int sim_x, int sim_y, uint8_t material, int radius)
 {
+	// Draw material in a circular region (radius around (sim_x, sim_y))
 	for (int dy = -radius; dy <= radius; ++dy)
 	{
 		for (int dx = -radius; dx <= radius; ++dx)
 		{
 			int x = sim_x + dx;
 			int y = sim_y + dy;
-			if (x < 0 || y < 0 || x >= sim_width || y >= sim_height) continue;
-			if (dx * dx + dy * dy > radius * radius) continue;
+			if (x < 0 || y < 0 || x >= sim_width || y >= sim_height) continue; // Out-of-bounds check
+			if (dx * dx + dy * dy > radius * radius) continue;				   // Check within circle radius
 
 			pixels[y * sim_width + x].material_index = material;
 		}
@@ -139,7 +148,6 @@ int main(void)
 	if (crux_glad_init() != 0) return EXIT_FAILURE;
 
 	uint32_t material_palette[256] = { 0 };
-
 	for (int i = 0; i < 256; ++i)
 	{
 		material_palette[i] = RGBA(0, 0, 0, 255);
@@ -151,6 +159,7 @@ int main(void)
 	material_palette[MATERIAL_WATER] = RGBA(0, 191, 255, 255);
 	material_palette[MATERIAL_STONE] = RGBA(169, 169, 169, 255);
 
+	// Memory allocations using vmap
 	pixel* pixels_front = NULL;
 	if (vmap_reserve(pixels_mem_size, (void**)&pixels_front) != 0) return EXIT_FAILURE;
 	if (vmap_commit(pixels_mem_size, pixels_front) != 0) return EXIT_FAILURE;
@@ -161,6 +170,7 @@ int main(void)
 	if (vmap_commit(pixels_mem_size, pixels_back) != 0) return EXIT_FAILURE;
 	if (vmap_prefault(pixels_mem_size, pixels_back) != 0) return EXIT_FAILURE;
 
+	// Initialize pixels with AIR material
 	for (uint32_t i = 0; i < pixel_count; ++i)
 	{
 		pixels_front[i].material_index = MATERIAL_AIR;
@@ -172,6 +182,7 @@ int main(void)
 	if (vmap_commit(texels_mem_size, texels) != 0) return EXIT_FAILURE;
 	if (vmap_prefault(texels_mem_size, texels) != 0) return EXIT_FAILURE;
 
+	// OpenGL setup for textures
 	GLuint texture_simulation;
 	glGenTextures(1, &texture_simulation);
 	glBindTexture(GL_TEXTURE_2D, texture_simulation);
@@ -194,14 +205,22 @@ int main(void)
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	size_t		vs_size = 0;
-	const char* vs_src	= crux_file_load_text("vertex.glsl", &vs_size);
-	GLuint		vs;
-	if (crux_shader_compile(GL_VERTEX_SHADER, vs_src, &vs) != 0) return EXIT_FAILURE;
+	size_t vs_size = 0;
+	size_t fs_size = 0;
 
-	size_t		fs_size = 0;
-	const char* fs_src	= crux_file_load_text("fragment.glsl", &fs_size);
-	GLuint		fs;
+	char* vs_path[MAX_PATH];
+	char* fs_path[MAX_PATH];
+
+	crux_shader_build_path(vs_path, sizeof(vs_path), "vertex.glsl");
+	crux_shader_build_path(fs_path, sizeof(fs_path), "fragment.glsl");
+
+	const char* vs_src = crux_file_load_text("vertex.glsl", &vs_size);
+	const char* fs_src = crux_file_load_text("fragment.glsl", &fs_size);
+
+	GLuint vs;
+	GLuint fs;
+
+	if (crux_shader_compile(GL_VERTEX_SHADER, vs_src, &vs) != 0) return EXIT_FAILURE;
 	if (crux_shader_compile(GL_FRAGMENT_SHADER, fs_src, &fs) != 0) return EXIT_FAILURE;
 
 	GLuint shader_program;
@@ -213,6 +232,7 @@ int main(void)
 	glUniform1i(glGetUniformLocation(shader_program, "palette"), 1);
 	glUniform1i(glGetUniformLocation(shader_program, "emission_palette"), 2);
 
+	// Vertex buffer setup
 	const float vertices[] = {
 		-1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 	};
@@ -295,8 +315,6 @@ int main(void)
 		stat_timer += frame_time;
 		frame_counter++;
 
-		int steps_this_frame = 0;
-
 		while (accumulator >= sim_dt)
 		{
 			simulate(pixels_front, pixels_back, sim_width, sim_height);
@@ -305,12 +323,9 @@ int main(void)
 			pixels_front = pixels_back;
 			pixels_back	 = temp;
 
-			sim_time += sim_dt;
 			accumulator -= sim_dt;
-			steps_this_frame++;
+			sim_counter++;
 		}
-
-		sim_counter += steps_this_frame;
 
 		if (stat_timer >= 1.0)
 		{

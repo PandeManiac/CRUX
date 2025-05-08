@@ -10,7 +10,6 @@ void main()
 {
 	ivec2 sim_size  = textureSize(sim_grid, 0);
 
-	// Flip Y-coordinate before scaling
 	vec2 flipped_coord = vec2(frag_texcoord.x, 1.0 - frag_texcoord.y);
 	ivec2 sim_coord = ivec2(flipped_coord * vec2(sim_size));
 

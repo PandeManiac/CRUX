@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+
 int crux_shader_compile(GLenum type, const char* source, GLuint* out)
 {
 	GLuint shader = glCreateShader(type);
@@ -50,4 +54,23 @@ int crux_shader_program(GLuint vertex_shader, GLuint fragment_shader, GLuint* ou
 
 	*out = program;
 	return 0;
+}
+
+void crux_shader_build_path(char* out_path, size_t max_len, const char* shader_filename)
+{
+	char  exe_path[MAX_PATH];
+	DWORD len = GetModuleFileNameA(NULL, exe_path, MAX_PATH);
+
+	if (len == 0 || len == MAX_PATH) return;
+
+	for (int i = (int)len - 1; i >= 0; --i)
+	{
+		if (exe_path[i] == '\\' || exe_path[i] == '/')
+		{
+			exe_path[i + 1] = '\0';
+			break;
+		}
+	}
+
+	snprintf(out_path, max_len, "%s..\\..\\..\\shaders\\%s", exe_path, shader_filename);
 }
