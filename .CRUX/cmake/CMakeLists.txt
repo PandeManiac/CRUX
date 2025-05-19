@@ -11,6 +11,7 @@ endif()
 set(WARNING_FLAGS
     -Wall
     -Wextra
+    -Werror
     -Wpedantic
     -Wshadow
     -Wconversion
@@ -43,16 +44,6 @@ set(SANITIZERS
     -fsanitize=integer
 )
 
-find_program(CLANG_TIDY_EXE NAMES clang-tidy)
-if(CLANG_TIDY_EXE)
-    set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_EXE}")
-endif()
-
-find_program(CPPCHECK_EXE NAMES cppcheck)
-if(CPPCHECK_EXE)
-    set(CMAKE_C_CPPCHECK "${CPPCHECK_EXE};--enable=all;--inconclusive;--quiet")
-endif()
-
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     set(LTO_FLAGS "-flto")
     set(MORE_OPTIMIZATIONS 
@@ -64,6 +55,16 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     )
 endif()
 
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+if(CLANG_TIDY_EXE)
+    set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_EXE}")
+endif()
+
+find_program(CPPCHECK_EXE NAMES cppcheck)
+if(CPPCHECK_EXE)
+    set(CMAKE_C_CPPCHECK "${CPPCHECK_EXE};--enable=all;--inconclusive;--quiet")
+endif()
+
 set(SOURCE_DIR "${CMAKE_SOURCE_DIR}/../../src")
 set(HEADER_DIR "${CMAKE_SOURCE_DIR}/../../header")
 
@@ -73,15 +74,15 @@ file(GLOB_RECURSE HEADER_FILES "${HEADER_DIR}/*.h")
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${HEADER_DIR})
 
-target_compile_options(${PROJECT_NAME} PRIVATE
-    $<$<CONFIG:Debug>:${WARNING_FLAGS} ${SANITIZERS} -O0 -g -DNDEBUG>
-    $<$<CONFIG:Release>:${WARNING_FLAGS} ${LTO_FLAGS} -O3 ${MORE_OPTIMIZATIONS}>
-)
-
 find_package(SDL2 REQUIRED)
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+)
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+    $<$<CONFIG:Debug>:${WARNING_FLAGS} ${SANITIZERS} -O0 -g -DNDEBUG>
+    $<$<CONFIG:Release>:${WARNING_FLAGS} ${LTO_FLAGS} -O3 ${MORE_OPTIMIZATIONS}>
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

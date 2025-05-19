@@ -10,7 +10,7 @@ int crux_window_init(crux_window* out, const char* title)
 	out->gl = SDL_GL_CreateContext(out->window);
 	if (!out->gl) return -3;
 
-	SDL_GetWindowSize(out->window, &out->width, &out->height);
+	SDL_GetWindowSize(out->window, (int*)&out->width, (int*)&out->height);
 
 	SDL_GL_SetSwapInterval(1);
 	return 0;

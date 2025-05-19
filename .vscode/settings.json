@@ -3,7 +3,11 @@
         "stdint.h": "c",
         "crux_window.h": "c",
         "crux_glad_wrap.h": "c",
-        "crux_sdl_wrap.h": "c"
+        "crux_sdl_wrap.h": "c",
+        "sim_pixel.h": "c",
+        "sim_thread.h": "c",
+        "tinycthread.h": "c",
+        "sim_material.h": "c"
     },
 
     "files.exclude": {

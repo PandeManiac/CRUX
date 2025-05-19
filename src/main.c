@@ -6,6 +6,7 @@
 #include "file/crux_file.h"
 #include "shader/crux_shader.h"
 #include "vmap/vmap.h"
+#include "threads/sim_thread.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -22,171 +23,77 @@ static double get_time_seconds(void)
 	return (double)SDL_GetTicks64() / 1000.0;
 }
 
-static void simulate(pixel* read, pixel* write, uint16_t w, uint16_t h)
+static inline void draw_material_world(pixel* pixels, uint16_t sim_width, uint16_t sim_height, int32_t sim_origin_x, int32_t sim_origin_y, int32_t world_x, int32_t world_y, uint8_t material, int radius)
 {
-	// Copy pixels to the write buffer before simulation
-	for (size_t i = 0; i < w * h; ++i)
-	{
-		write[i] = read[i];
-	}
-
-	for (int y = h - 2; y >= 0; --y) // Loop from bottom to top (y-axis)
-	{
-		for (int x = 0; x < w; ++x) // Loop over each pixel in the row (x-axis)
-		{
-			size_t	i	= (size_t)(y * w + x);	  // Index for current pixel
-			uint8_t mat = read[i].material_index; // Material type at this pixel
-
-			switch (mat)
-			{
-				case MATERIAL_WATER:
-				case MATERIAL_LAVA:
-				{
-					size_t below = (size_t)((y + 1) * w + x); // Index of the cell below
-
-					// Check if the space below is air
-					if (read[below].material_index == MATERIAL_AIR)
-					{
-						write[below].material_index = mat;
-						write[i].material_index		= MATERIAL_AIR;
-					}
-					else if (x > 0 && read[below - 1].material_index == MATERIAL_AIR)
-					{
-						write[below - 1].material_index = mat;
-						write[i].material_index			= MATERIAL_AIR;
-					}
-					else if (x < w - 1 && read[below + 1].material_index == MATERIAL_AIR)
-					{
-						write[below + 1].material_index = mat;
-						write[i].material_index			= MATERIAL_AIR;
-					}
-
-					break;
-				}
-
-				case MATERIAL_FIRE:
-				{
-					// Spread fire to nearby wood
-					for (int dy = -1; dy <= 1; ++dy)
-					{
-						for (int dx = -1; dx <= 1; ++dx)
-						{
-							int nx = x + dx, ny = y + dy;
-							if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue; // Ensure inside bounds
-							size_t ni = (size_t)(ny * w + nx);					  // Calculate index for neighbor
-							if (read[ni].material_index == MATERIAL_WOOD) write[ni].material_index = MATERIAL_FIRE;
-						}
-					}
-
-					// Random chance to decay fire to air
-					if (rand() % 5 == 0) write[i].material_index = MATERIAL_AIR;
-					break;
-				}
-
-				case MATERIAL_WOOD:
-				case MATERIAL_STONE:
-					break;
-
-				default:
-					break;
-			}
-		}
-	}
-}
-
-static void draw_material(pixel* pixels, uint16_t sim_width, uint16_t sim_height, int sim_x, int sim_y, uint8_t material, int radius)
-{
-	// Draw material in a circular region (radius around (sim_x, sim_y))
 	for (int dy = -radius; dy <= radius; ++dy)
 	{
 		for (int dx = -radius; dx <= radius; ++dx)
 		{
-			int x = sim_x + dx;
-			int y = sim_y + dy;
-			if (x < 0 || y < 0 || x >= sim_width || y >= sim_height) continue; // Out-of-bounds check
-			if (dx * dx + dy * dy > radius * radius) continue;				   // Check within circle radius
+			if (dx * dx + dy * dy > radius * radius) continue;
 
-			pixels[y * sim_width + x].material_index = material;
+			int32_t wx = world_x + dx;
+			int32_t wy = world_y + dy;
+
+			if (wx < sim_origin_x || wy < sim_origin_y || wx >= sim_origin_x + sim_width || wy >= sim_origin_y + sim_height) continue;
+
+			int32_t lx = wx - sim_origin_x;
+			int32_t ly = wy - sim_origin_y;
+
+			pixels[ly * sim_width + lx].material_index = material;
 		}
-	}
-}
-
-static const char* get_material_name(uint8_t material)
-{
-	switch (material)
-	{
-		case MATERIAL_AIR:
-			return "Air";
-		case MATERIAL_WOOD:
-			return "Wood";
-		case MATERIAL_FIRE:
-			return "Fire";
-		case MATERIAL_WATER:
-			return "Water";
-		case MATERIAL_STONE:
-			return "Stone";
-		case MATERIAL_LAVA:
-			return "Lava";
-		default:
-			return "Unknown";
 	}
 }
 
 int main(void)
 {
-	const uint16_t sim_width	   = 320;
-	const uint16_t sim_height	   = 180;
-	const uint32_t pixel_count	   = sim_width * sim_height;
-	const uint32_t pixels_mem_size = pixel_count * sizeof(pixel);
-	const uint32_t texels_mem_size = pixel_count;
+	const uint16_t view_width		   = 320;
+	const uint16_t view_height		   = 180;
+	const uint16_t sim_view_multiplier = 25;
+	const uint16_t sim_width		   = view_width * sim_view_multiplier;
+	const uint16_t sim_height		   = view_height * sim_view_multiplier;
+	const uint32_t texels_mem_size	   = view_width * view_height;
+	const uint32_t pixel_count		   = sim_width * sim_height;
+	const uint32_t pixels_mem_size	   = pixel_count * sizeof(pixel);
 
-	const char* sim_title = "CRUX";
+	double camera_xf = sim_width / 2.0;
+	double camera_yf = sim_height / 2.0;
+
+	printf("ps:%llu\n", sizeof(pixel));
 
 	crux_window window = { 0 };
-	if (crux_sdl_init() != 0) return EXIT_FAILURE;
-	if (crux_window_init(&window, sim_title) != 0) return EXIT_FAILURE;
-	if (crux_glad_init() != 0) return EXIT_FAILURE;
+	if (crux_sdl_init() != 0 || crux_window_init(&window, "CRUX") != 0 || crux_glad_init() != 0)
+	{
+		printf("FATAL: Window init failed\n");
+		return EXIT_FAILURE;
+	}
 
 	uint32_t material_palette[256] = { 0 };
 	for (int i = 0; i < 256; ++i)
-	{
 		material_palette[i] = RGBA(0, 0, 0, 255);
-	}
+	material_palette[MATERIAL_AIR]	  = RGBA(10, 10, 10, 255);
+	material_palette[MATERIAL_WOOD]	  = RGBA(139, 69, 19, 255);
+	material_palette[MATERIAL_FIRE]	  = RGBA(255, 69, 0, 255);
+	material_palette[MATERIAL_WATER]  = RGBA(0, 191, 255, 255);
+	material_palette[MATERIAL_STONE]  = RGBA(169, 169, 169, 255);
+	material_palette[MATERIAL_IGNITE] = RGBA(255, 128, 0, 255);
 
-	material_palette[MATERIAL_AIR]	 = RGBA(10, 10, 10, 255);
-	material_palette[MATERIAL_WOOD]	 = RGBA(139, 69, 19, 255);
-	material_palette[MATERIAL_FIRE]	 = RGBA(255, 69, 0, 255);
-	material_palette[MATERIAL_WATER] = RGBA(0, 191, 255, 255);
-	material_palette[MATERIAL_STONE] = RGBA(169, 169, 169, 255);
+	pixel*	 pixels_front = NULL;
+	pixel*	 pixels_back  = NULL;
+	uint8_t* texels		  = NULL;
 
-	// Memory allocations using vmap
-	pixel* pixels_front = NULL;
-	if (vmap_reserve(pixels_mem_size, (void**)&pixels_front) != 0) return EXIT_FAILURE;
-	if (vmap_commit(pixels_mem_size, pixels_front) != 0) return EXIT_FAILURE;
-	if (vmap_prefault(pixels_mem_size, pixels_front) != 0) return EXIT_FAILURE;
-
-	pixel* pixels_back = NULL;
-	if (vmap_reserve(pixels_mem_size, (void**)&pixels_back) != 0) return EXIT_FAILURE;
-	if (vmap_commit(pixels_mem_size, pixels_back) != 0) return EXIT_FAILURE;
-	if (vmap_prefault(pixels_mem_size, pixels_back) != 0) return EXIT_FAILURE;
-
-	// Initialize pixels with AIR material
-	for (uint32_t i = 0; i < pixel_count; ++i)
+	if (vmap_reserve(pixels_mem_size, (void**)&pixels_front) != 0 || vmap_commit(pixels_mem_size, pixels_front) != 0 || vmap_reserve(pixels_mem_size, (void**)&pixels_back) != 0 || vmap_commit(pixels_mem_size, pixels_back) != 0 || vmap_reserve(texels_mem_size, (void**)&texels) != 0 || vmap_commit(texels_mem_size, texels) != 0)
 	{
-		pixels_front[i].material_index = MATERIAL_AIR;
-		pixels_back[i].material_index  = MATERIAL_AIR;
+		fprintf(stderr, "FATAL: Allocation failure\n");
+		return EXIT_FAILURE;
 	}
 
-	uint8_t* texels = NULL;
-	if (vmap_reserve(texels_mem_size, (void**)&texels) != 0) return EXIT_FAILURE;
-	if (vmap_commit(texels_mem_size, texels) != 0) return EXIT_FAILURE;
-	if (vmap_prefault(texels_mem_size, texels) != 0) return EXIT_FAILURE;
+	for (uint32_t i = 0; i < pixel_count; ++i)
+		pixels_front[i].material_index = pixels_back[i].material_index = MATERIAL_AIR;
 
-	// OpenGL setup for textures
-	GLuint texture_simulation;
-	glGenTextures(1, &texture_simulation);
-	glBindTexture(GL_TEXTURE_2D, texture_simulation);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8UI, sim_width, sim_height);
+	GLuint texture_view;
+	glGenTextures(1, &texture_view);
+	glBindTexture(GL_TEXTURE_2D, texture_view);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8UI, view_width, view_height);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -198,41 +105,15 @@ int main(void)
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	GLuint texture_emission;
-	glGenTextures(1, &texture_emission);
-	glBindTexture(GL_TEXTURE_1D, texture_emission);
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, material_palette);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	GLuint		vs, fs, shader_program;
+	const char* vs_src = crux_file_load_text("vertex.glsl", NULL);
+	const char* fs_src = crux_file_load_text("fragment.glsl", NULL);
+	if (crux_shader_compile(GL_VERTEX_SHADER, vs_src, &vs) != 0 || crux_shader_compile(GL_FRAGMENT_SHADER, fs_src, &fs) != 0 || crux_shader_program(vs, fs, &shader_program) != 0) return EXIT_FAILURE;
 
-	size_t vs_size = 0;
-	size_t fs_size = 0;
-
-	char* vs_path[MAX_PATH];
-	char* fs_path[MAX_PATH];
-
-	crux_shader_build_path(vs_path, sizeof(vs_path), "vertex.glsl");
-	crux_shader_build_path(fs_path, sizeof(fs_path), "fragment.glsl");
-
-	const char* vs_src = crux_file_load_text("vertex.glsl", &vs_size);
-	const char* fs_src = crux_file_load_text("fragment.glsl", &fs_size);
-
-	GLuint vs;
-	GLuint fs;
-
-	if (crux_shader_compile(GL_VERTEX_SHADER, vs_src, &vs) != 0) return EXIT_FAILURE;
-	if (crux_shader_compile(GL_FRAGMENT_SHADER, fs_src, &fs) != 0) return EXIT_FAILURE;
-
-	GLuint shader_program;
-	if (crux_shader_program(vs, fs, &shader_program) != 0) return EXIT_FAILURE;
 	glUseProgram(shader_program);
-	glDeleteShader(vs);
-	glDeleteShader(fs);
-	glUniform1i(glGetUniformLocation(shader_program, "sim_grid"), 0);
+	glUniform1i(glGetUniformLocation(shader_program, "view_grid"), 0);
 	glUniform1i(glGetUniformLocation(shader_program, "palette"), 1);
-	glUniform1i(glGetUniformLocation(shader_program, "emission_palette"), 2);
 
-	// Vertex buffer setup
 	const float vertices[] = {
 		-1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 	};
@@ -248,25 +129,29 @@ int main(void)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	uint8_t current_material = MATERIAL_WOOD;
+	GLuint pbos[2];
+	glGenBuffers(2, pbos);
+	for (int i = 0; i < 2; ++i)
+	{
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbos[i]);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, texels_mem_size, NULL, GL_STREAM_DRAW);
+	}
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-	double sim_time = 0.0, sim_dt = 1.0 / 60.0;
-	double accumulator = 0.0, current_time = get_time_seconds();
-	int	   frame_counter = 0, sim_counter = 0;
-	double stat_timer = 0.0;
-
+	uint8_t	  current_material = MATERIAL_WOOD;
 	SDL_Event event;
-	int		  running = 1;
+	int		  running = 1, pbo_index = 0;
+	double	  accumulator = 0.0, current_time = get_time_seconds();
+	double	  sim_dt = 1.0 / 60.0, stat_timer = 0.0;
+	int		  frame_counter = 0, sim_counter = 0;
+
+	int checker_phase = 0;
 
 	while (running)
 	{
 		while (SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_QUIT)
-			{
-				running = 0;
-			}
-
+			if (event.type == SDL_QUIT) running = 0;
 			if (event.type == SDL_KEYDOWN)
 			{
 				switch (event.key.keysym.sym)
@@ -287,23 +172,7 @@ int main(void)
 						current_material = MATERIAL_STONE;
 						break;
 				}
-
-				printf("[INPUT] Current material: %s\n", get_material_name(current_material));
 			}
-		}
-
-		int		 mouse_x, mouse_y;
-		uint32_t mouse_buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
-
-		if (mouse_buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
-		{
-			float scale_x = (float)mouse_x / (float)window.width;
-			float scale_y = (float)mouse_y / (float)window.height;
-
-			int sim_x = (int)(scale_x * sim_width);
-			int sim_y = (int)(scale_y * sim_height);
-
-			draw_material(pixels_front, sim_width, sim_height, sim_x, sim_y, current_material, 3);
 		}
 
 		double new_time	  = get_time_seconds();
@@ -315,16 +184,44 @@ int main(void)
 		stat_timer += frame_time;
 		frame_counter++;
 
+		const uint8_t* keys			= SDL_GetKeyboardState(NULL);
+		double		   camera_speed = 300.0;
+		if (keys[SDL_SCANCODE_W]) camera_yf -= camera_speed * frame_time;
+		if (keys[SDL_SCANCODE_S]) camera_yf += camera_speed * frame_time;
+		if (keys[SDL_SCANCODE_A]) camera_xf -= camera_speed * frame_time;
+		if (keys[SDL_SCANCODE_D]) camera_xf += camera_speed * frame_time;
+
+		if (camera_xf < view_width / 2.0) camera_xf = view_width / 2.0;
+		if (camera_yf < view_height / 2.0) camera_yf = view_height / 2.0;
+		if (camera_xf > sim_width - view_width / 2.0) camera_xf = sim_width - view_width / 2.0;
+		if (camera_yf > sim_height - view_height / 2.0) camera_yf = sim_height - view_height / 2.0;
+
+		int camera_x = (int)camera_xf;
+		int camera_y = (int)camera_yf;
+
+		int32_t sim_origin_x = 0;
+		int32_t sim_origin_y = 0;
+
+		int		 mouse_x, mouse_y;
+		uint32_t mouse_buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
+		if (mouse_buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
+		{
+			float scale_x = (float)mouse_x / (float)window.width;
+			float scale_y = (float)mouse_y / (float)window.height;
+			int	  world_x = camera_x - view_width / 2 + (int)(scale_x * view_width);
+			int	  world_y = camera_y - view_height / 2 + (int)(scale_y * view_height);
+			draw_material_world(pixels_front, sim_width, sim_height, sim_origin_x, sim_origin_y, world_x, world_y, current_material, 3);
+		}
+
 		while (accumulator >= sim_dt)
 		{
-			simulate(pixels_front, pixels_back, sim_width, sim_height);
-
+			simulate_checkerboard(pixels_front, pixels_back, sim_width, sim_height, checker_phase);
 			pixel* temp	 = pixels_front;
 			pixels_front = pixels_back;
 			pixels_back	 = temp;
-
 			accumulator -= sim_dt;
 			sim_counter++;
+			checker_phase ^= 1;
 		}
 
 		if (stat_timer >= 1.0)
@@ -335,28 +232,46 @@ int main(void)
 			sim_counter	  = 0;
 		}
 
-		for (size_t i = 0; i < pixel_count; ++i)
+		for (uint16_t y = 0; y < view_height; ++y)
 		{
-			texels[i] = pixels_front[i].material_index;
+			for (uint16_t x = 0; x < view_width; ++x)
+			{
+				int32_t	 world_x   = camera_x - view_width / 2 + x;
+				int32_t	 world_y   = camera_y - view_height / 2 + y;
+				uint32_t tex_index = y * view_width + x;
+
+				if (world_x < 0 || world_y < 0 || world_x >= sim_width || world_y >= sim_height)
+					texels[tex_index] = MATERIAL_AIR;
+				else
+					texels[tex_index] = pixels_front[world_y * sim_width + world_x].material_index;
+			}
 		}
 
-		glBindTexture(GL_TEXTURE_2D, texture_simulation);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, sim_width, sim_height, GL_RED_INTEGER, GL_UNSIGNED_BYTE, texels);
+		pbo_index = (pbo_index + 1) % 2;
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbos[pbo_index]);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, texels_mem_size, NULL, GL_STREAM_DRAW);
+		void* ptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+		if (ptr)
+		{
+			memcpy(ptr, texels, texels_mem_size);
+			glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+		}
+		glBindTexture(GL_TEXTURE_2D, texture_view);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view_width, view_height, GL_RED_INTEGER, GL_UNSIGNED_BYTE, 0);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
 		glViewport(0, 0, window.width, window.height);
 		glClear(GL_COLOR_BUFFER_BIT);
-
+		glUseProgram(shader_program);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture_simulation);
+		glBindTexture(GL_TEXTURE_2D, texture_view);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_1D, texture_palette);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_1D, texture_emission);
-
-		glUseProgram(shader_program);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		SDL_GL_SwapWindow(window.window);
 	}
 
+	glDeleteBuffers(2, pbos);
 	return 0;
 }

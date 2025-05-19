@@ -6,6 +6,7 @@
 #define RGBA(r, g, b, a) ((uint32_t)(((a) << 24) | ((b) << 16) | ((g) << 8) | (r)))
 
 typedef uint8_t material_id;
+
 enum material_id_enum
 {
 	MATERIAL_AIR = 0,
@@ -21,5 +22,7 @@ enum material_id_enum
 
 	MATERIAL_COUNT
 };
+
+#define MATERIAL_IGNITE 254
 
 #endif // SIM_MATERIAL_H
