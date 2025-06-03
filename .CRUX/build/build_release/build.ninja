@@ -109,6 +109,36 @@ build CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/shader/crux_shad
   TARGET_COMPILE_PDB = CMakeFiles\CRUX.dir\
   TARGET_PDB = CRUX.pdb
 
+build CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_material.c.obj: C_COMPILER__CRUX_unscanned_Release C$:/Users/mytho/Programming/C/CRUX/src/sim/sim_material.c || cmake_object_order_depends_target_CRUX
+  CODE_CHECK = "C:\Program Files\CMake\bin\cmake.exe" -E __run_co_compile --tidy="C:/Program Files/LLVM/bin/clang-tidy.exe;--extra-arg-before=--driver-mode=gcc" --source=C:\Users\mytho\Programming\C\CRUX\src\sim\sim_material.c -- 
+  DEP_FILE = CMakeFiles\CRUX.dir\C_\Users\mytho\Programming\C\CRUX\src\sim\sim_material.c.obj.d
+  FLAGS = -O3 -DNDEBUG -std=gnu99 -D_DLL -D_MT -Xclang --dependent-lib=msvcrt -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wfloat-equal -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wdouble-promotion -Wformat=2 -Wundef -Wcast-align -Wcast-qual -Wstrict-overflow=5 -Wnull-dereference -Wredundant-decls -Wdisabled-optimization -Wno-newline-eof -Wstack-protector -Wpointer-arith -flto -O3 -march=native -funroll-loops -ftree-vectorize -fomit-frame-pointer -fno-exceptions
+  INCLUDES = -IC:/Users/mytho/Programming/C/CRUX/.CRUX/cmake/../../header -isystem C:/Libraries/vcpkg/installed/x64-windows/include -isystem C:/Libraries/vcpkg/installed/x64-windows/include/SDL2
+  OBJECT_DIR = CMakeFiles\CRUX.dir
+  OBJECT_FILE_DIR = CMakeFiles\CRUX.dir\C_\Users\mytho\Programming\C\CRUX\src\sim
+  TARGET_COMPILE_PDB = CMakeFiles\CRUX.dir\
+  TARGET_PDB = CRUX.pdb
+
+build CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_pixel.c.obj: C_COMPILER__CRUX_unscanned_Release C$:/Users/mytho/Programming/C/CRUX/src/sim/sim_pixel.c || cmake_object_order_depends_target_CRUX
+  CODE_CHECK = "C:\Program Files\CMake\bin\cmake.exe" -E __run_co_compile --tidy="C:/Program Files/LLVM/bin/clang-tidy.exe;--extra-arg-before=--driver-mode=gcc" --source=C:\Users\mytho\Programming\C\CRUX\src\sim\sim_pixel.c -- 
+  DEP_FILE = CMakeFiles\CRUX.dir\C_\Users\mytho\Programming\C\CRUX\src\sim\sim_pixel.c.obj.d
+  FLAGS = -O3 -DNDEBUG -std=gnu99 -D_DLL -D_MT -Xclang --dependent-lib=msvcrt -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wfloat-equal -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wdouble-promotion -Wformat=2 -Wundef -Wcast-align -Wcast-qual -Wstrict-overflow=5 -Wnull-dereference -Wredundant-decls -Wdisabled-optimization -Wno-newline-eof -Wstack-protector -Wpointer-arith -flto -O3 -march=native -funroll-loops -ftree-vectorize -fomit-frame-pointer -fno-exceptions
+  INCLUDES = -IC:/Users/mytho/Programming/C/CRUX/.CRUX/cmake/../../header -isystem C:/Libraries/vcpkg/installed/x64-windows/include -isystem C:/Libraries/vcpkg/installed/x64-windows/include/SDL2
+  OBJECT_DIR = CMakeFiles\CRUX.dir
+  OBJECT_FILE_DIR = CMakeFiles\CRUX.dir\C_\Users\mytho\Programming\C\CRUX\src\sim
+  TARGET_COMPILE_PDB = CMakeFiles\CRUX.dir\
+  TARGET_PDB = CRUX.pdb
+
+build CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_texture.c.obj: C_COMPILER__CRUX_unscanned_Release C$:/Users/mytho/Programming/C/CRUX/src/sim/sim_texture.c || cmake_object_order_depends_target_CRUX
+  CODE_CHECK = "C:\Program Files\CMake\bin\cmake.exe" -E __run_co_compile --tidy="C:/Program Files/LLVM/bin/clang-tidy.exe;--extra-arg-before=--driver-mode=gcc" --source=C:\Users\mytho\Programming\C\CRUX\src\sim\sim_texture.c -- 
+  DEP_FILE = CMakeFiles\CRUX.dir\C_\Users\mytho\Programming\C\CRUX\src\sim\sim_texture.c.obj.d
+  FLAGS = -O3 -DNDEBUG -std=gnu99 -D_DLL -D_MT -Xclang --dependent-lib=msvcrt -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wfloat-equal -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wdouble-promotion -Wformat=2 -Wundef -Wcast-align -Wcast-qual -Wstrict-overflow=5 -Wnull-dereference -Wredundant-decls -Wdisabled-optimization -Wno-newline-eof -Wstack-protector -Wpointer-arith -flto -O3 -march=native -funroll-loops -ftree-vectorize -fomit-frame-pointer -fno-exceptions
+  INCLUDES = -IC:/Users/mytho/Programming/C/CRUX/.CRUX/cmake/../../header -isystem C:/Libraries/vcpkg/installed/x64-windows/include -isystem C:/Libraries/vcpkg/installed/x64-windows/include/SDL2
+  OBJECT_DIR = CMakeFiles\CRUX.dir
+  OBJECT_FILE_DIR = CMakeFiles\CRUX.dir\C_\Users\mytho\Programming\C\CRUX\src\sim
+  TARGET_COMPILE_PDB = CMakeFiles\CRUX.dir\
+  TARGET_PDB = CRUX.pdb
+
 build CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/threads/sim_thread.c.obj: C_COMPILER__CRUX_unscanned_Release C$:/Users/mytho/Programming/C/CRUX/src/threads/sim_thread.c || cmake_object_order_depends_target_CRUX
   CODE_CHECK = "C:\Program Files\CMake\bin\cmake.exe" -E __run_co_compile --tidy="C:/Program Files/LLVM/bin/clang-tidy.exe;--extra-arg-before=--driver-mode=gcc" --source=C:\Users\mytho\Programming\C\CRUX\src\threads\sim_thread.c -- 
   DEP_FILE = CMakeFiles\CRUX.dir\C_\Users\mytho\Programming\C\CRUX\src\threads\sim_thread.c.obj.d
@@ -157,7 +187,7 @@ build CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/window/crux_wind
 #############################################
 # Link the executable CRUX.exe
 
-build CRUX.exe: C_EXECUTABLE_LINKER__CRUX_Release CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/file/crux_file.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/glad/crux_glad_wrap.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/glad/glad.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/main.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sdl/crux_sdl_wrap.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/shader/crux_shader.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/threads/sim_thread.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/threads/tinycthread.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/vmap/vmap.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/window/crux_window.c.obj | C$:/Libraries/vcpkg/installed/x64-windows/lib/SDL2.lib
+build CRUX.exe: C_EXECUTABLE_LINKER__CRUX_Release CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/file/crux_file.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/glad/crux_glad_wrap.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/glad/glad.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/main.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sdl/crux_sdl_wrap.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/shader/crux_shader.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_material.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_pixel.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_texture.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/threads/sim_thread.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/threads/tinycthread.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/vmap/vmap.c.obj CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/window/crux_window.c.obj | C$:/Libraries/vcpkg/installed/x64-windows/lib/SDL2.lib
   FLAGS = -O3 -DNDEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrt
   LINK_FLAGS = -Xlinker /subsystem:console  -fuse-ld=lld-link
   LINK_LIBRARIES = C:/Libraries/vcpkg/installed/x64-windows/lib/SDL2.lib  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 -loldnames

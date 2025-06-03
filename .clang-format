@@ -23,8 +23,8 @@ UseTab:          Always
 BreakBeforeBraces: Allman
 
 AllowShortIfStatementsOnASingleLine: true
-
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: false
+AllowShortLoopsOnASingleLine: true
 
 SpacesInBracedInitList: true
 

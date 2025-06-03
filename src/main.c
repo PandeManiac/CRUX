@@ -1,12 +1,14 @@
 #include "window/crux_window.h"
 #include "sim/sim_pixel.h"
 #include "sim/sim_material.h"
+#include "sim/sim_texture.h"
 #include "sdl/crux_sdl_wrap.h"
 #include "glad/crux_glad_wrap.h"
 #include "file/crux_file.h"
 #include "shader/crux_shader.h"
 #include "vmap/vmap.h"
 #include "threads/sim_thread.h"
+#include "assert/crux_assert.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -23,7 +25,7 @@ static double get_time_seconds(void)
 	return (double)SDL_GetTicks64() / 1000.0;
 }
 
-static inline void draw_material_world(pixel* pixels, uint16_t sim_width, uint16_t sim_height, int32_t sim_origin_x, int32_t sim_origin_y, int32_t world_x, int32_t world_y, uint8_t material, int radius)
+static inline void draw_material_world(sim_pixel* pixels, uint16_t sim_width, uint16_t sim_height, int32_t sim_origin_x, int32_t sim_origin_y, int32_t world_x, int32_t world_y, uint8_t material, int radius)
 {
 	for (int dy = -radius; dy <= radius; ++dy)
 	{
@@ -46,69 +48,44 @@ static inline void draw_material_world(pixel* pixels, uint16_t sim_width, uint16
 
 int main(void)
 {
-	const uint16_t view_width		   = 320;
-	const uint16_t view_height		   = 180;
-	const uint16_t sim_view_multiplier = 25;
-	const uint16_t sim_width		   = view_width * sim_view_multiplier;
-	const uint16_t sim_height		   = view_height * sim_view_multiplier;
-	const uint32_t texels_mem_size	   = view_width * view_height;
-	const uint32_t pixel_count		   = sim_width * sim_height;
-	const uint32_t pixels_mem_size	   = pixel_count * sizeof(pixel);
+	const uint16_t view_width	   = 320;
+	const uint16_t view_height	   = 180;
+	const uint16_t sim_view_mult   = 20;
+	const uint16_t sim_width	   = view_width * sim_view_mult;
+	const uint16_t sim_height	   = view_height * sim_view_mult;
+	const uint32_t sim_pixel_count = sim_width * sim_height;
+	const uint32_t texels_mem_size = view_width * view_height;
 
 	double camera_xf = sim_width / 2.0;
 	double camera_yf = sim_height / 2.0;
 
-	printf("ps:%llu\n", sizeof(pixel));
-
 	crux_window window = { 0 };
-	if (crux_sdl_init() != 0 || crux_window_init(&window, "CRUX") != 0 || crux_glad_init() != 0)
-	{
-		printf("FATAL: Window init failed\n");
-		return EXIT_FAILURE;
-	}
+
+	crux_sdl_init();
+	crux_window_init(&window, "CRUX");
+	crux_glad_init();
 
 	uint32_t material_palette[256] = { 0 };
-	for (int i = 0; i < 256; ++i)
-		material_palette[i] = RGBA(0, 0, 0, 255);
-	material_palette[MATERIAL_AIR]	  = RGBA(10, 10, 10, 255);
-	material_palette[MATERIAL_WOOD]	  = RGBA(139, 69, 19, 255);
-	material_palette[MATERIAL_FIRE]	  = RGBA(255, 69, 0, 255);
-	material_palette[MATERIAL_WATER]  = RGBA(0, 191, 255, 255);
-	material_palette[MATERIAL_STONE]  = RGBA(169, 169, 169, 255);
-	material_palette[MATERIAL_IGNITE] = RGBA(255, 128, 0, 255);
+	material_palette_initialize(material_palette);
 
-	pixel*	 pixels_front = NULL;
-	pixel*	 pixels_back  = NULL;
-	uint8_t* texels		  = NULL;
+	sim_pixel* pixels_front = NULL;
+	sim_pixel* pixels_back	= NULL;
+	uint8_t*   texels		= NULL;
+	sim_pixel_buffers_allocate(&pixels_front, &pixels_back, &texels, sim_pixel_count);
 
-	if (vmap_reserve(pixels_mem_size, (void**)&pixels_front) != 0 || vmap_commit(pixels_mem_size, pixels_front) != 0 || vmap_reserve(pixels_mem_size, (void**)&pixels_back) != 0 || vmap_commit(pixels_mem_size, pixels_back) != 0 || vmap_reserve(texels_mem_size, (void**)&texels) != 0 || vmap_commit(texels_mem_size, texels) != 0)
-	{
-		fprintf(stderr, "FATAL: Allocation failure\n");
-		return EXIT_FAILURE;
-	}
+	GLuint texture_view	   = sim_texture_view_initialize(view_width, view_height);
+	GLuint texture_palette = sim_texture_palette_initialize(material_palette);
 
-	for (uint32_t i = 0; i < pixel_count; ++i)
-		pixels_front[i].material_index = pixels_back[i].material_index = MATERIAL_AIR;
+	GLuint vs			  = 0;
+	GLuint fs			  = 0;
+	GLuint shader_program = 0;
 
-	GLuint texture_view;
-	glGenTextures(1, &texture_view);
-	glBindTexture(GL_TEXTURE_2D, texture_view);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8UI, view_width, view_height);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	GLuint texture_palette;
-	glGenTextures(1, &texture_palette);
-	glBindTexture(GL_TEXTURE_1D, texture_palette);
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, material_palette);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	GLuint		vs, fs, shader_program;
 	const char* vs_src = crux_file_load_text("vertex.glsl", NULL);
 	const char* fs_src = crux_file_load_text("fragment.glsl", NULL);
-	if (crux_shader_compile(GL_VERTEX_SHADER, vs_src, &vs) != 0 || crux_shader_compile(GL_FRAGMENT_SHADER, fs_src, &fs) != 0 || crux_shader_program(vs, fs, &shader_program) != 0) return EXIT_FAILURE;
+
+	crux_shader_compile(GL_VERTEX_SHADER, vs_src, &vs);
+	crux_shader_compile(GL_FRAGMENT_SHADER, fs_src, &fs);
+	crux_shader_program(vs, fs, &shader_program);
 
 	glUseProgram(shader_program);
 	glUniform1i(glGetUniformLocation(shader_program, "view_grid"), 0);
@@ -216,9 +193,9 @@ int main(void)
 		while (accumulator >= sim_dt)
 		{
 			simulate_checkerboard(pixels_front, pixels_back, sim_width, sim_height, checker_phase);
-			pixel* temp	 = pixels_front;
-			pixels_front = pixels_back;
-			pixels_back	 = temp;
+			sim_pixel* temp = pixels_front;
+			pixels_front	= pixels_back;
+			pixels_back		= temp;
 			accumulator -= sim_dt;
 			sim_counter++;
 			checker_phase ^= 1;

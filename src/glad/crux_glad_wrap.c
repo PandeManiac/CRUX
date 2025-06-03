@@ -1,8 +1,8 @@
 #include "glad/crux_glad_wrap.h"
 #include "sdl/crux_sdl_wrap.h"
+#include "assert/crux_assert.h"
 
-int crux_glad_init(void)
+void crux_glad_init(void)
 {
-	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) return -1;
-	return 0;
+	ASSERT_FATAL(gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress), "Failed to initialize GLAD!");
 }

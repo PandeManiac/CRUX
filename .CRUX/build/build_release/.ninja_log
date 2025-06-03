@@ -1,14 +1,17 @@
 # ninja log v6
 40	546	7693611333124155	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/vmap/vmap.c.obj	a2348f7d59f74230
-34	699	7693611332913572	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/shader/crux_shader.c.obj	4dd16403bf10af98
-31	818	7693611332913572	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sdl/crux_sdl_wrap.c.obj	cef03252288d9d07
-16	524	7693615760865557	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/window/crux_window.c.obj	6e56cf98a5c051e7
-25	908	7693611332913572	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/glad/crux_glad_wrap.c.obj	27af3ebdbaac74bc
+27	448	7706691091082960	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/shader/crux_shader.c.obj	4dd16403bf10af98
+25	528	7705924424327903	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sdl/crux_sdl_wrap.c.obj	cef03252288d9d07
+18	539	7705924348234983	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/window/crux_window.c.obj	6e56cf98a5c051e7
+30	1371	7705923984472554	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/glad/crux_glad_wrap.c.obj	27af3ebdbaac74bc
 22	956	7693611332913572	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/file/crux_file.c.obj	82d69f0bd812ab03
-21	949	7693681693451258	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/main.c.obj	5df21a375eba83fc
+24	1683	7706691437217465	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/main.c.obj	5df21a375eba83fc
 27	4425	7693611332913572	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/glad/glad.c.obj	fd4898edc15bf269
-949	3908	7693681702791117	CRUX.exe	eaf714e46880b9e7
+1684	4190	7706691453807488	CRUX.exe	a40b46f6ecd2c82a
 37	753	7693611333090374	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/threads/tinycthread.c.obj	f0826184d3040e7c
-24	1950	7693680011433209	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/threads/sim_thread.c.obj	88f8fcbc8b28711f
-13	872	7693699113137988	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/main.c.obj	5df21a375eba83fc
-872	4774	7693699121702789	CRUX.exe	eaf714e46880b9e7
+36	2093	7704984435948988	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/threads/sim_thread.c.obj	88f8fcbc8b28711f
+17	156	7704990252712692	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_pixel.c.obj	6b0bd5da9827020e
+31	297	7704984435898997	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_material.c.obj	9fa29cc1fdf36a01
+40	489	7705923984472554	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/sim/sim_texture.c.obj	61ed370fe46b2180
+25	1691	7706691897911419	CMakeFiles/CRUX.dir/C_/Users/mytho/Programming/C/CRUX/src/main.c.obj	5df21a375eba83fc
+1691	4144	7706691914581418	CRUX.exe	a40b46f6ecd2c82a

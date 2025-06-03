@@ -18,15 +18,15 @@
 
 typedef struct
 {
-	pixel*	 read;
-	pixel*	 write;
-	uint16_t sim_w;
-	uint16_t sim_h;
-	uint16_t tile_x;
-	uint16_t tile_y;
-	uint16_t tile_w;
-	uint16_t tile_h;
-	uint32_t rng_seed;
+	sim_pixel* read;
+	sim_pixel* write;
+	uint16_t   sim_w;
+	uint16_t   sim_h;
+	uint16_t   tile_x;
+	uint16_t   tile_y;
+	uint16_t   tile_w;
+	uint16_t   tile_h;
+	uint32_t   rng_seed;
 } sim_tile_job;
 
 typedef struct
@@ -65,8 +65,8 @@ static int simulate_tile_worker(void* arg)
 	for (int j = ctx->job_start; j < ctx->job_end; ++j)
 	{
 		sim_tile_job* job	= &ctx->jobs[j];
-		pixel*		  read	= job->read;
-		pixel*		  write = job->write;
+		sim_pixel*	  read	= job->read;
+		sim_pixel*	  write = job->write;
 		uint16_t	  sim_w = job->sim_w;
 		uint16_t	  sim_h = job->sim_h;
 		uint32_t	  rng	= job->rng_seed;
@@ -162,7 +162,7 @@ static int simulate_tile_worker(void* arg)
 	return 0;
 }
 
-void simulate_checkerboard(pixel* read, pixel* write, uint16_t sim_w, uint16_t sim_h, int checker_phase)
+void simulate_checkerboard(sim_pixel* read, sim_pixel* write, uint16_t sim_w, uint16_t sim_h, int checker_phase)
 {
 	static sim_tile_job jobs[MAX_JOBS];
 	int					job_count = 0;

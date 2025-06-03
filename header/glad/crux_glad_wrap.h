@@ -3,6 +3,6 @@
 
 #include "glad/glad.h"
 
-int crux_glad_init(void);
+void crux_glad_init(void);
 
 #endif // CRUX_GLAD_WRAP_H

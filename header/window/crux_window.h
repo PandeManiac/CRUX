@@ -11,7 +11,7 @@ typedef struct crux_window
 	SDL_GLContext gl;
 } crux_window;
 
-int	 crux_window_init(crux_window* out, const char* title);
+void crux_window_init(crux_window* out, const char* title);
 void crux_window_destroy(crux_window* win);
 
 #endif // CRUX_WINDOW_H
